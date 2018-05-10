@@ -27,4 +27,4 @@ CMD echo "authCommunity log $SNMPTRAPD_COMMUNITY" >> /etc/snmp/snmptrapd.conf &&
     echo "password=$SNMPTRAPD_DB_PASS" >> $MY_CNF && \
     echo "host=$SNMPTRAPD_DB_HOST" >> $MY_CNF && \
     echo "dummy=" >> $MY_CNF && \
-    snmptrapd -Lo -f
+    snmptrapd -Lo -f udp6:161
