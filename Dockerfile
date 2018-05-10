@@ -6,11 +6,22 @@ RUN sed -i -e 's/$/ contrib non-free/g' /etc/apt/sources.list && \
     sed -i -e 's/security.debian.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apt/sources.list
 
 
-RUN apt-get update && apt-get install -y libsnmp-dev snmp-mibs-downloader
+RUN apt-get update && apt-get install -y libsnmp-dev snmp-mibs-downloader snmptrapd
 
-RUN apt-get install -y snmptrapd
+RUN echo "sqlMaxQueue 140" >> /etc/snmp/snmptrapd.conf && \
+    echo "sqlSaveInterval 9" >> /etc/snmp/snmptrapd.conf
 
+RUN mv /etc/mysql/my.cnf.fallback /etc/mysql/my.cnf
+
+ENV MY_CNF /etc/mysql/conf.d/snmptrapd.conf
 ENV SNMPTRAPD_COMMUNITY public
-ENV SNMPTRAPD_OUTPUT_FILE /data/snmptrapd.log
+ENV SNMPTRAPD_DB_USER user
+ENV SNMPTRAPD_DB_PASS secret
+ENV SNMPTRAPD_DB_HOST localhost
 
-CMD echo "authCommunity log $SNMPTRAPD_COMMUNITY" >> /etc/snmp/snmptrapd.conf && snmptrapd -Lf "$SNMPTRAPD_OUTPUT_FILE" -f
+CMD echo "authCommunity log $SNMPTRAPD_COMMUNITY" >> /etc/snmp/snmptrapd.conf && \
+    echo "[snmptrapd]" >> $MY_CNF && \
+    echo "user=$SNMPTRAPD_DB_USER" >> $MY_CNF && \
+    echo "password=$SNMPTRAPD_DB_PASS" >> $MY_CNF && \
+    echo "host=$SNMPTRAPD_DB_HOST" >> $MY_CNF && \
+    snmptrapd -Lo -f
