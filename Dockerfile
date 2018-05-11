@@ -11,9 +11,9 @@ RUN apt-get update && apt-get install -y libsnmp-dev snmp-mibs-downloader snmptr
 RUN echo "sqlMaxQueue 140" >> /etc/snmp/snmptrapd.conf && \
     echo "sqlSaveInterval 9" >> /etc/snmp/snmptrapd.conf
 
-RUN mv /etc/mysql/my.cnf.fallback /etc/mysql/my.cnf
+RUN rm -rf /etc/mysql
 
-ENV MY_CNF /etc/mysql/conf.d/snmptrapd.conf
+ENV MY_CNF /etc/my.cnf
 ENV SNMPTRAPD_COMMUNITY public
 ENV SNMPTRAPD_DB_USER user
 ENV SNMPTRAPD_DB_PASS secret
@@ -24,4 +24,5 @@ CMD echo "authCommunity log $SNMPTRAPD_COMMUNITY" >> /etc/snmp/snmptrapd.conf &&
     echo "user=$SNMPTRAPD_DB_USER" >> $MY_CNF && \
     echo "password=$SNMPTRAPD_DB_PASS" >> $MY_CNF && \
     echo "host=$SNMPTRAPD_DB_HOST" >> $MY_CNF && \
+    echo "dummy=" >> $MY_CNF && \
     snmptrapd -Lo -f
